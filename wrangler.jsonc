@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kartu-fokus",
+  "main": "src/worker.js",
+  "compatibility_date": "2025-06-01",
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  // Batas 20 kartu per menit per IP, supaya kuota Gemini tidak dihabiskan orang lain.
+  "ratelimits": [
+    { "name": "RL", "namespace_id": "4201", "simple": { "limit": 20, "period": 60 } }
+  ],
+  "vars": {
+    // Dicoba berurutan; model berikutnya dipakai kalau model sebelumnya sedang penuh.
+    "GEMINI_MODEL": "gemini-3.1-flash-lite,gemini-3.5-flash-lite,gemini-2.5-flash"
+  }
+  // Secret: `npx wrangler secret put GEMINI_API_KEY`. Lokal: isi .dev.vars.
+}
