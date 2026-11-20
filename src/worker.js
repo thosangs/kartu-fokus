@@ -66,7 +66,7 @@ async function buatKartu(request, env) {
   }
 
   if (!terbaik || terbaik.fatal) {
-    return json({ pesan: 'Ceritanya belum jadi. Biasanya karena koneksi atau kuota Gemini sedang penuh. Coba lagi sebentar.' }, 502);
+    return json({ pesan: 'Ceritanya belum jadi karena server cerita sedang ramai. Coba lagi sebentar, ya.' }, 502);
   }
   if (terbaik.masalah.length) console.warn('dipakai dengan catatan', kode, terbaik.masalah);
 

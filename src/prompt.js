@@ -1,4 +1,4 @@
-import { BENDA, KERANGKA, KEDUA, TEMPAT, USIA } from '../public/bahan.js';
+import { BENDA, KERANGKA, KEDUA, TEMPAT, USIA, acak } from '../public/bahan.js';
 import { BENTUK, detailKartu, rencanaSoal } from './soal.js';
 
 export const TIPE_SOAL = ['ingat', 'penyebab', 'tebak', 'ide'];
@@ -8,7 +8,7 @@ export const SKEMA = {
   properties: {
     judul: {
       type: 'STRING',
-      description: 'Judul 2 sampai 4 kata. Kata pertama kata benda kunci cerita, contoh "Telur untuk Nenek" atau "Payung Kuning Raka".',
+      description: 'Judul 2 sampai 6 kata yang bikin anak penasaran, mengikuti bentuk judul di prompt. Jangan membocorkan akhir cerita.',
     },
     paragraf: { type: 'ARRAY', items: { type: 'STRING' } },
     soal: {
@@ -29,6 +29,28 @@ export const SKEMA = {
   required: ['judul', 'paragraf', 'soal'],
   propertyOrdering: ['judul', 'paragraf', 'soal'],
 };
+
+// Gaya per umur: makin kecil anaknya, makin banyak pengulangan dan bunyi; makin besar, makin banyak kejutan.
+const GAYA_USIA = {
+  '4-5': 'Untuk anak 4–5 tahun: satu masalah sederhana, banyak pengulangan, kata bunyi yang gampang ditirukan, kata kerja yang bisa diperagakan.',
+  '6-7': 'Untuk anak 6–7 tahun: selipkan satu hal kecil yang lucu (salah dengar, tingkah hewan, benda di tempat aneh) dan satu kejutan kecil.',
+  '8-9': 'Untuk anak 8–9 tahun: tokoh boleh salah sangka atau hampir menyerah dulu sebelum menemukan jalan. Pilih kata kerja yang hidup dan sedikit humor.',
+};
+
+// Pembuka dan bentuk judul dipilih dari kode kartu, supaya cerita tidak selalu dibuka dengan cara
+// yang sama (model cenderung selalu memilih kata bunyi kalau dibebaskan).
+const PEMBUKA = [
+  'ucapan tokoh dalam tanda kutip',
+  'satu kata bunyi, lalu langsung kejadiannya',
+  'tokoh utama sedang melakukan sesuatu yang seru atau sedikit aneh',
+  'pertanyaan yang diucapkan salah satu tokoh',
+];
+const BENTUK_JUDUL = [
+  'seruan pendek dari salah satu tokoh (misalnya diawali "Awas", "Tunggu", "Aduh", atau "Hore")',
+  'pertanyaan yang membuat penasaran, tapi jangan diawali "Ke mana"',
+  'nama tokoh utama ditambah keadaan yang membuat penasaran, tanpa kata "hilang", "rusak", atau bocoran akhir cerita',
+  'kata bunyi yang penting di cerita, ditambah sedikit keterangan',
+];
 
 function frasaBenda(b) {
   const meta = BENDA[b.id];
@@ -51,6 +73,9 @@ export function buatPrompt(bahan, usia) {
       .replaceAll('{benda}', bahan.benda.nama)
       .replaceAll('{tempat}', TEMPAT[bahan.tempat].nama);
 
+  const r = acak(`${bahan.kode}|gaya`);
+  const gaya = { pembuka: PEMBUKA[Math.floor(r() * PEMBUKA.length)], judul: BENTUK_JUDUL[Math.floor(r() * BENTUK_JUDUL.length)] };
+
   const kedua =
     bahan.kedua.id === 'teman'
       ? `${bahan.kedua.sebutan}, ${KEDUA.teman.deskripsi} (${bahan.kedua.jenis === 'pr' ? 'perempuan' : 'laki-laki'})`
@@ -70,13 +95,25 @@ ALUR (ikuti urutannya, ini rantai sebab-akibat):
 ${k.alur.map((a, i) => `${i + 1}. ${isi(a)}`).join('\n')}
 
 ATURAN CERITA:
-- Panjang ${u.kata[0]} sampai ${u.kata[1]} kata, dibagi ${u.paragraf} paragraf pendek.
-- Kalimat pendek dan jelas, enak dibacakan keras. Kosakata sehari-hari anak Indonesia.
-- Sebab dan akibat harus jelas dari kejadian, bukan dari ceramah. Jangan menulis pesan moral di akhir.
+- Panjang ${u.kata[0]} sampai ${u.kata[1]} kata, dibagi ${u.paragraf} paragraf pendek. Ini batas keras: kalau kepanjangan, kurangi deskripsi, bukan ucapan tokoh.
+- Kosakata sehari-hari anak Indonesia. Pakai nama dan sebutan persis seperti di bahan. Tokoh kedua disebut "${bahan.kedua.sebutan}".
+- Sebab dan akibat harus jelas dari kejadian, bukan dari ceramah.
 - Tidak ada kekerasan, hal yang terlalu menakutkan, atau merek dagang.
-- Pakai nama dan sebutan persis seperti di bahan. Tokoh kedua disebut "${bahan.kedua.sebutan}".
-- Ada minimal dua kalimat ucapan tokoh dalam tanda kutip.
 - Sebut tempat-tempat kecil dengan jelas (misalnya "di bawah pohon", "di dekat lapak buah"), dan buat urutan kejadian mudah diikuti.
+
+CARA BERCERITA (cerita ini dibacakan keras, jadi harus seru didengar, bukan seperti laporan):
+- Judul berbentuk ${gaya.judul}.
+- Buka cerita dengan ${gaya.pembuka}. Jangan dibuka dengan "Pada suatu hari", nama hari, atau kalimat yang hanya menjelaskan tempat.
+- Deskripsi tempat di bahan hanya catatan untukmu. Jangan salin utuh; munculkan bagiannya satu per satu saat tokoh melihat, mendengar, atau melewatinya.
+- Pakai 2 atau 3 kata bunyi yang cocok dengan kejadian (bunyi langkah, benda jatuh, air, hewan, angin), tersebar di cerita.
+- Pilih satu ucapan pendek atau bunyi khas (paling banyak 6 kata) yang muncul lagi 2 atau 3 kali, dan setiap kali muncul harus masuk akal dengan kejadiannya. Yang terakhir boleh sedikit diubah supaya terasa sebagai penutup. Anak senang menebak kapan ucapan itu muncul lagi.
+- Minimal tiga kalimat ucapan tokoh dalam tanda kutip, dengan nada yang berbeda-beda (bertanya, berseru, berbisik), supaya orang tua bisa memainkan suaranya.
+- Tunjukkan perasaan lewat gerak tubuh dan ucapan (menunduk, menggigit bibir, melompat-lompat, suaranya mengecil), bukan dengan menyebut "sedih", "senang", atau "takut". ${usia === '4-5' ? 'Untuk anak 4–5 tahun, buat gerak tubuhnya jelas dan mudah dikenali.' : 'Petunjuknya boleh halus, asal ada.'}
+- Ada satu momen menahan napas sebelum masalahnya selesai: tokoh mencari, menunggu, ragu, atau hampir salah langkah.
+- Panjang kalimat berganti-ganti. Kebanyakan pendek, sesekali satu kalimat yang sangat pendek untuk memberi jeda.
+- ${GAYA_USIA[usia]}
+- Akhiri dengan satu gambaran kecil yang hangat atau lucu: apa yang dilakukan, dilihat, atau diucapkan tokoh saat itu juga. Kalimat terakhir tidak boleh tentang pelajaran, kebiasaan baru, atau pesan moral (misalnya "sejak hari itu", "kini ${bahan.anak.nama} tahu", "${bahan.anak.nama} selalu", "${bahan.anak.nama} sadar bahwa").
+- Hindari klise: "pada suatu hari", "tiba-tiba" lebih dari sekali, "dengan wajah ceria", "tersenyum lebar", "hari yang cerah", "terlihat sebuah", "sangat" berulang kali, "lucu", "indah", "menyenangkan".
 
 PERTANYAAN (tepat 4, urutannya tetap, masing-masing dengan perintah dan bentuknya sendiri):
 ${rencana.map((s, i) => `${i + 1}. tipe "${s.tipe}": ${isi(s.perintah)} Bentuk: ${BENTUK[s.bentuk]}.`).join('\n')}

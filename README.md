@@ -2,7 +2,7 @@
 
 Cerita pendek untuk dibacakan orang tua, lalu kartu dibalik dan anak menjawab empat pertanyaan
 (ingat-ingat, cari penyebab, coba tebak, punya ide). Tiap jawaban menempel satu stiker sampai
-gambarnya lengkap, lalu gambar itu masuk album.
+gambarnya lengkap. Kartu yang selesai menambah bintang, gelar, dan tantangan di Pojok Juara si kecil.
 
 ## Cara kerjanya
 
@@ -15,6 +15,9 @@ gambarnya lengkap, lalu gambar itu masuk album.
    JSON schema, lalu memeriksa hasilnya: nama tokoh dan detail wajib muncul, kalimat "bukti" untuk
    petunjuk harus benar-benar ada di cerita (kalau sedikit beda, diganti kalimat cerita yang paling mirip).
    Kalau masih kurang pas, dicoba sekali lagi.
+   Gaya bercerita juga diatur di prompt: kalimat pertama langsung ke kejadian, ada kata bunyi dan
+   satu ucapan yang diulang, perasaan ditunjukkan lewat gerak, dan akhir cerita berupa adegan kecil,
+   bukan pesan moral. Bentuk pembuka dan bentuk judul dipilih dari kode kartu supaya tidak seragam.
 4. **Rencana soal** (`src/soal.js`) juga ditentukan kode kartu, supaya pertanyaan tidak bisa ditebak
    dari kartu sebelumnya:
    - Urutan tipe soal dipilih dari 7 pola. Soal ingatan tidak selalu di depan, kadang ada dua, dan
@@ -48,16 +51,11 @@ Buka http://localhost:8787.
 
 ## Deploy ke Cloudflare Workers
 
+Live di **https://fokus-anak.tukangdata.com** (custom domain diatur di `routes` pada `wrangler.jsonc`).
+
 ```bash
-npx wrangler secret put GEMINI_API_KEY
 npx wrangler deploy
-```
-
-Hasilnya di `kartu-fokus.<akun>.workers.dev`. Untuk subdomain sendiri (misalnya `fokus.tukangdata.com`),
-tambahkan di `wrangler.jsonc`:
-
-```jsonc
-"routes": [{ "pattern": "fokus.tukangdata.com", "custom_domain": true }]
+npx wrangler secret put GEMINI_API_KEY   # sekali saja, atau saat ganti key
 ```
 
 Sebaiknya pakai API key Gemini terpisah dari aplikasi lain, supaya kalau kuotanya habis aplikasi
@@ -75,14 +73,36 @@ lain tidak ikut berhenti.
 - Sudut soal baru: tambah di bank yang sesuai di `src/soal.js`. Tulis sebagai perintah untuk Gemini
   ("tanyakan ..."), boleh memakai `{anak}`, `{kedua}`, `{benda}`, `{benda2}`, `{tempat}`, `{sifat}`.
 
+## Gamifikasi (Pojok Juara)
+
+Semuanya di `public/piala.js`, gampang diubah:
+
+- **Bintang:** daftar `MILESTONE`. Tiap baris satu bintang, `kartu` = jumlah kartu selesai untuk
+  mendapatkannya, `julukan` = gelarnya (Kuping Siaga sampai Legenda Dongeng). Sekarang 3, 8, 15, 25, 40, 60, 100 cerita.
+- **Tantangan:** daftar `LENCANA`, tiap tantangan punya `ajak` (kalimat ajakan selama belum berhasil), `berhasil` (teks di dialog hadiah), dan `cek(statistik)`. Statistik yang tersedia:
+  `kartu`, `stiker`, `sekaliDengar` (selesai tanpa intip cerita), `tanpaContekan` (selesai tanpa
+  petunjuk), `tempat` (jumlah tempat berbeda), `beruntun` dan `beruntunTerpanjang` (hari).
+- Bintang atau lencana baru muncul sebagai dialog setelah kartu selesai. Kartu yang dibuka lagi dari
+  koleksi tidak dihitung dua kali.
+- **Nama si kecil** ditanya sekali saat pertama mulai (boleh dilewati), lalu dipanggil di setiap soal,
+  di layar selesai, dan di Pojok Juara. Nama tidak dikirim ke server atau Gemini.
+- **Penyimpanan:** localStorage browser (`kf-profil`, `kf-kartu`, `kf-album`). Tidak ada database
+  atau akun, jadi isinya hilang kalau data browser dihapus dan tidak pindah ke perangkat lain.
+
 ## Catatan desain
 
 Gaya: buku stiker. Bentuknya mengikuti contoh yang dipilih pemilik produk
 ([uupm.cc educational-platform](https://www.uupm.cc/demo/educational-platform)): kartu putih
 bergaris tinta tebal, bayangan keras, sudut membulat, huruf bulat. Dial: tenaga sedang, ritme
-seragam (setiap kartu strukturnya sama supaya anak terbiasa), gerak secukupnya.
+seragam (setiap kartu strukturnya sama supaya anak terbiasa), gerak cukup banyak tapi tiap gerak
+punya arti (diminta pemilik produk).
 
-- **Warna:** latar krem yang tenang (`#FFF7EA`), tinta ungu tua (`#2B2A3A`), dan empat warna krayon
+- **Kartu dua sisi:** depan cerita, belakang soal, seperti kartu sungguhan. "Balik kartu" memutar
+  kartu menyamping (sumbu Y). Dari sisi soal, "Intip ceritanya lagi" memutarnya kembali, jadi orang
+  tua bisa membaca ulang kalau anak lupa.
+- **Cerita per halaman:** satu paragraf per halaman dengan tombol Sebelumnya/Lanjut (atau panah
+  kiri/kanan), supaya kartu tidak memanjang. Halaman berganti dengan geser ke samping.
+- **Warna:** latar langit biru (`#B5E0FF`) dengan awan, bintang, dan titik warna yang ditebar acak tiap halaman dibuka (`lukisLangit()` di app.js), samar, dan awannya berjalan pelan melintasi layar seperti tertiup angin; menyambung dengan langit di gambar stiker, tinta ungu tua (`#2B2A3A`), dan empat warna krayon
   cerah: kuning `#FFC93C`, merah `#EF4B3F`, biru `#3B8CF0`, hijau `#4DBA5E`. Alasannya dari riset
   warna anak: warna cerah dan hangat paling menarik perhatian, tapi latar yang ramai mengganggu fokus.
   Jadi warna cerah hanya dipakai di bagian yang harus dilihat (tombol utama, jenis soal, stiker),
@@ -93,12 +113,17 @@ seragam (setiap kartu strukturnya sama supaya anak terbiasa), gerak secukupnya.
   Dipakai sama di beranda, label soal, dan kotak kemajuan, supaya anak mengenali jenisnya dari warna.
 - **Huruf:** Fredoka untuk judul (bulat dan tebal, ramah anak, sama dengan contoh), Nunito untuk
   cerita dan tombol (ujung membulat, tetap mudah dibaca di ukuran 20px saat dibacakan).
+- **Tombol ajakan di beranda:** satu-satunya oranye (`#EA5A12`) di halaman, bentuk kapsul, paling
+  besar, dan "mencolek" dua kali setelah halaman terbuka. Pilihan umur yang terpilih sengaja gelap,
+  bukan kuning, supaya tidak menyaingi tombol ini.
 - **Bayangan keras:** bukan hiasan. Tombol turun menutup bayangannya saat ditekan, jadi terasa
   seperti tombol sungguhan. Pilihan umur yang terpilih juga tampil "tertekan".
 - **Stiker:** tokoh dan benda punya pinggiran putih dan bayangan, latar tidak. Yang belum ditempel
   tampil sebagai garis putus-putus, seperti tempat kosong di buku stiker.
-- **Gerak:** hanya dua. Kartu dibalik (cerita tertutup sebelum soal) dan stiker jatuh ke tempatnya
-  (hadiah per jawaban). Keduanya mati kalau sistem meminta gerak dikurangi.
-- **Tema:** satu tema terang. Krem tidak semenyilaukan putih saat dibacakan malam hari.
+- **Gerak:** kartu berputar menyamping saat dibalik; stiker jatuh dan memantul ke gambar saat
+  "Sudah dijawab, dapat stiker!" ditekan; kotak kemajuan terisi; soal berikutnya datang dari kanan
+  seperti kartu baru; konfeti sekali saat gambar lengkap. Semuanya mati kalau sistem meminta gerak
+  dikurangi.
+- **Tema:** satu tema terang. Hiasan latar sengaja pucat supaya teks tetap terbaca (teks kedua minimal 4.9:1). Cincin fokus keyboard berupa garis putus-putus gelap karena biru tidak cukup kontras di atas langit.
 - **Kaki halaman:** mengikuti pola side project Tukangdata: "Made With ❤️ By Tukangdata.com".
 - **Tanpa gambar AI.** Semua gambar dirakit dari bentuk vektor. Ikon aplikasi belum dibuat.

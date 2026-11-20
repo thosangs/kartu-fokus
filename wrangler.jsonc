@@ -4,6 +4,7 @@
   "main": "src/worker.js",
   "compatibility_date": "2025-06-01",
   "observability": { "enabled": true },
+  "routes": [{ "pattern": "fokus-anak.tukangdata.com", "custom_domain": true }],
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
