@@ -124,6 +124,8 @@ async function panggilGemini(prompt, env) {
 const rapikan = (s) =>
   String(s ?? '')
     .replace(/\s*\u2014\s*/g, ', ')
+    .replace(/[*_]{1,3}([^*_]+?)[*_]{1,3}/g, '$1') // tebal/miring gaya markdown, misalnya *Duk, duk!*
+    .replace(/[*#`]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 
