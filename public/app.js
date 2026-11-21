@@ -393,6 +393,14 @@ function jejakMeja(baru = -1) {
   return jejak(tipeKartu(st.kartu), st.soalKe, { sekarang, baru });
 }
 
+// Gambar dan jejak ada di dua tempat: kolom kiri (desktop) dan di dalam kartu (HP). Isi semuanya.
+function isiGambarMeja(baru = null) {
+  layar.querySelectorAll('.gambar-meja').forEach((el) => (el.innerHTML = gambarMeja(baru)));
+}
+function isiJejakMeja(baru = -1) {
+  layar.querySelectorAll('.jejak-meja').forEach((el) => (el.innerHTML = jejakMeja(baru)));
+}
+
 // Cerita dibaca per halaman, satu paragraf per halaman, supaya kartunya tidak memanjang.
 function isiDepan({ arah = 0 } = {}) {
   const k = st.kartu;
@@ -475,14 +483,21 @@ function tampilMeja() {
     `<section class="layar meja">
     <div class="dua-kolom">
       <div class="kolom-gambar">
-        <figure class="bingkai" id="gambar">${gambarMeja()}</figure>
-        <div id="jejak">${jejakMeja()}</div>
+        <figure class="bingkai gambar-meja">${gambarMeja()}</figure>
+        <div class="jejak-meja">${jejakMeja()}</div>
         ${labelKartu(st.kartu)}
       </div>
       <div class="kartu-flip${belakang ? ' dibalik' : ''}" data-sisi="${st.sisi}">
         <div class="kartu-putar">
-          <article class="sisi depan kartu"${belakang ? ' inert' : ''}>${isiDepan()}</article>
-          <section class="sisi belakang kartu" aria-label="Sisi soal"${belakang ? '' : ' inert'}>${isiBelakang()}</section>
+          <article class="sisi depan kartu"${belakang ? ' inert' : ''}>
+            <figure class="gambar-hp gambar-meja" aria-hidden="true">${gambarMeja()}</figure>
+            <div class="wadah-depan">${isiDepan()}</div>
+          </article>
+          <section class="sisi belakang kartu" aria-label="Sisi soal"${belakang ? '' : ' inert'}>
+            <figure class="gambar-hp gambar-meja" aria-hidden="true">${gambarMeja()}</figure>
+            <div class="jejak-hp jejak-meja">${jejakMeja()}</div>
+            <div class="wadah-belakang">${isiBelakang()}</div>
+          </section>
         </div>
       </div>
     </div>
@@ -496,7 +511,7 @@ let sedangGanti = false;
 async function gantiHalaman(arah) {
   const n = st.kartu.cerita.paragraf.length;
   const tujuan = Math.min(Math.max(st.halaman + arah, 0), n - 1);
-  const depan = layar.querySelector('.depan');
+  const depan = layar.querySelector('.wadah-depan');
   if (!depan || tujuan === st.halaman || sedangGanti || st.sisi !== 'depan') return;
   sedangGanti = true;
   const lama = depan.querySelector('.halaman-cerita');
@@ -535,8 +550,8 @@ async function balikKartu(ke) {
   flip.dataset.sisi = ke;
   if (BOLEH_GERAK) await jeda(DURASI_BALIK / 2);
   aktif.inert = false;
-  if (ke === 'belakang') pasif.innerHTML = isiDepan();
-  else pasif.innerHTML = isiBelakang();
+  if (ke === 'belakang') pasif.querySelector('.wadah-depan').innerHTML = isiDepan();
+  else pasif.querySelector('.wadah-belakang').innerHTML = isiBelakang();
   sedangBalik = false;
   await naikKeAtas();
   fokuskan(aktif.querySelector(ke === 'belakang' ? 'h2' : 'h1'));
@@ -545,8 +560,8 @@ async function balikKartu(ke) {
 async function mulaiSoal() {
   if (!st.mulaiSoal) {
     st.mulaiSoal = true;
-    document.getElementById('gambar').innerHTML = gambarMeja();
-    document.getElementById('jejak').innerHTML = jejakMeja();
+    isiGambarMeja();
+    isiJejakMeja();
     siapkanCadangan();
   }
   await balikKartu('belakang');
@@ -555,7 +570,7 @@ async function mulaiSoal() {
 function intipCerita() {
   if (st.mulaiSoal && st.soalKe < 4) st.bantu.intip = true;
   st.halaman = 0;
-  const depan = layar.querySelector('.depan');
+  const depan = layar.querySelector('.wadah-depan');
   if (depan) depan.innerHTML = isiDepan();
   balikKartu('depan');
 }
@@ -570,8 +585,8 @@ async function jawab() {
   st.terpasang.push(kunci);
   st.soalKe++;
   umumkan(`Stiker ${namaPotongan(st.kartu.bahan, kunci)} menempel.`);
-  document.getElementById('gambar').innerHTML = gambarMeja(kunci);
-  document.getElementById('jejak').innerHTML = jejakMeja(st.soalKe - 1);
+  isiGambarMeja(kunci);
+  isiJejakMeja(st.soalKe - 1);
   let hadiah = null;
   if (st.soalKe >= 4) {
     const sebelum = statistik();
@@ -582,7 +597,7 @@ async function jawab() {
     }
     rayakan();
   }
-  const wadah = layar.querySelector('.belakang');
+  const wadah = layar.querySelector('.wadah-belakang');
   const lama = wadah.querySelector('.isi-belakang');
   if (BOLEH_GERAK && lama) {
     lama.classList.add('keluar');
@@ -590,7 +605,7 @@ async function jawab() {
   }
   wadah.innerHTML = isiBelakang();
   if (BOLEH_GERAK) wadah.querySelector('.isi-belakang').classList.add('masuk');
-  layar.querySelector('.depan').innerHTML = isiDepan();
+  layar.querySelector('.wadah-depan').innerHTML = isiDepan();
   fokuskan(wadah.querySelector('h2'));
   sedangJawab = false;
   if (hadiah) setTimeout(() => tampilHadiah(hadiah), BOLEH_GERAK ? 1300 : 0);
@@ -599,7 +614,8 @@ async function jawab() {
 // Konfeti dari potongan warna jenis soal, sekali saja saat gambar lengkap.
 function rayakan() {
   if (!BOLEH_GERAK) return;
-  const kolom = layar.querySelector('.kolom-gambar');
+  const kolom = [...layar.querySelectorAll('.kolom-gambar, .sisi.belakang')].find((el) => el.offsetParent !== null);
+  if (!kolom) return;
   const wadah = document.createElement('div');
   wadah.className = 'konfeti';
   wadah.setAttribute('aria-hidden', 'true');
