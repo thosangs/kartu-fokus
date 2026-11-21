@@ -1,0 +1,14 @@
+{
+  "name": "Kartu Fokus",
+  "short_name": "Kartu Fokus",
+  "description": "Dongeng pendek yang selalu baru, lalu tebak-tebakan seru untuk anak 4 sampai 9 tahun.",
+  "lang": "id",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#B5E0FF",
+  "theme_color": "#B5E0FF",
+  "icons": [
+    { "src": "/ikon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/ikon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

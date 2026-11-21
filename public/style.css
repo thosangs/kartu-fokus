@@ -839,3 +839,13 @@ main { overflow-x: clip; }
   .jejak-hp .jejak { margin: 0 0 18px; }
   .sisi.belakang > .konfeti { top: 120px; }
 }
+
+/* ── Reset profil ─────────────────────────── */
+.aksi-profil { display: flex; flex-wrap: wrap; gap: 0 18px; }
+/* Merah tua: kontras 5.5:1 di atas langit, beda jelas dari tautan biasa. */
+.tautan-bahaya { color: #A3221B; }
+.tautan-bahaya:hover { color: #7E1913; }
+/* Tombol hapus: merah tua dengan teks putih (5.3:1). */
+.tombol.bahaya { background: #C8322A; color: var(--putih); }
+.dialog-reset h2 { margin-top: 0; }
+.dialog-reset .tombol.bahaya { width: 100%; }

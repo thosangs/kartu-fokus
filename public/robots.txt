@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /og
+
+Sitemap: https://fokus-anak.tukangdata.com/sitemap.xml

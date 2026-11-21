@@ -45,7 +45,18 @@ const simpan = {
       /* abaikan */
     }
   },
+  hapus(kunci) {
+    try {
+      localStorage.removeItem(kunci);
+    } catch {
+      /* abaikan */
+    }
+  },
 };
+
+// Judul tab browser per layar.
+const JUDUL_SITUS = 'Kartu Fokus';
+const judulTab = (t) => (document.title = t ? `${t} · ${JUDUL_SITUS}` : `${JUDUL_SITUS} · Dongeng dan Tebak-tebakan Seru untuk Anak`);
 
 const usiaAwal = simpan.baca('kf-usia', '6-7');
 const st = {
@@ -286,6 +297,7 @@ function perbaruiKepala() {
 
 function tampilBeranda() {
   st.abort?.abort();
+  judulTab();
   const pilihan = Object.entries(USIA)
     .map(
       ([nilai, u]) => `<label><input type="radio" name="umur" value="${nilai}"${nilai === st.usia ? ' checked' : ''}>
@@ -322,6 +334,7 @@ function tampilBeranda() {
 // lanjut: 'ambil' (dari tombol mulai) atau 'piala' (dari Ganti nama).
 function tampilKenalan(lanjut = 'ambil') {
   const nama = namaAnak();
+  judulTab('Kenalan dulu');
   tampilkan(
     `<section class="layar kenalan">
     <form class="kartu kartu-tengah" data-form="kenalan" data-lanjut="${lanjut}">
@@ -356,6 +369,7 @@ function selesaiKenalan(nama, lanjut) {
 }
 
 function tampilMemuat() {
+  judulTab('Menyiapkan cerita');
   tampilkan(`<section class="layar memuat" aria-busy="true">
     <div class="kartu kartu-tengah">
       <h1 class="sr-only">Menyiapkan kartu</h1>
@@ -371,6 +385,7 @@ function tampilMemuat() {
 }
 
 function tampilGalat(pesan, kode) {
+  judulTab('Kartunya belum jadi');
   tampilkan(`<section class="layar galat">
     <div class="kartu kartu-tengah">
       <h1>Kartunya belum jadi</h1>
@@ -479,6 +494,7 @@ const isiBelakang = () => (st.soalKe >= 4 ? isiSelesai() : isiSoal());
 
 function tampilMeja() {
   const belakang = st.sisi === 'belakang';
+  judulTab(st.kartu.cerita.judul);
   tampilkan(
     `<section class="layar meja">
     <div class="dua-kolom">
@@ -729,6 +745,7 @@ function gantiHalamanRak(arah) {
 
 function tampilPiala() {
   const nama = namaAnak();
+  judulTab(`Pojok Juara${nama ? ` ${nama}` : ''}`);
   const stat = statistik();
   const punya = jumlahBintang(stat.kartu);
   const gelar = punya ? MILESTONE[punya - 1] : null;
@@ -762,7 +779,10 @@ function tampilPiala() {
   tampilkan(`<section class="layar piala">
     <div class="kepala-piala">
       <h1>Pojok Juara${nama ? ` ${esc(nama)}` : ''}</h1>
-      <button class="tautan-intip" type="button" data-aksi="ganti-nama">${nama ? 'Ganti nama' : 'Isi nama si kecil'}</button>
+      <div class="aksi-profil">
+        <button class="tautan-intip" type="button" data-aksi="ganti-nama">${nama ? 'Ganti nama' : 'Isi nama si kecil'}</button>
+        <button class="tautan-intip tautan-bahaya" type="button" data-aksi="reset">Reset profil</button>
+      </div>
     </div>
 
     <section class="kartu panel-gelar" aria-labelledby="judul-gelar">
@@ -824,6 +844,33 @@ function bukaLipatan(tombol) {
   tombol.textContent = buka ? (petunjuk ? 'Tutup petunjuk' : 'Tutup jawaban') : petunjuk ? 'Minta petunjuk' : 'Lihat jawaban';
 }
 
+// Reset: hapus nama, bintang, tantangan, dan rak cerita dari perangkat ini. Selalu dikonfirmasi dulu,
+// dan fokus awal ada di "Batal" supaya tidak terhapus karena salah pencet.
+function tanyaReset() {
+  const nama = namaAnak();
+  const d = document.createElement('dialog');
+  d.className = 'dialog-hadiah dialog-reset';
+  d.setAttribute('aria-labelledby', 'judul-reset');
+  d.innerHTML = `<h2 id="judul-reset">Mulai dari nol?</h2>
+    <p>Nama${nama ? ` ${esc(nama)}` : ''}, semua bintang, tantangan, dan rak cerita akan dihapus dari perangkat ini. Tidak bisa dikembalikan.</p>
+    <div class="aksi tengah">
+      <button class="tombol bahaya" type="button" data-aksi="reset-ya">Ya, hapus semua</button>
+      <button class="tautan-intip" type="button" data-aksi="tutup-dialog" autofocus>Batal</button>
+    </div>`;
+  document.body.append(d);
+  d.addEventListener('close', () => d.remove());
+  d.showModal();
+}
+
+function resetProfil() {
+  for (const k of ['kf-profil', 'kf-album', 'kf-kartu']) simpan.hapus(k);
+  simpanProfil(profil());
+  Object.assign(st, { kartu: null, soalKe: 0, mulaiSoal: false, sisi: 'depan', halaman: 0, halamanRak: 0, terpasang: [], dariAlbum: false });
+  history.pushState({}, '', '/');
+  tampilBeranda();
+  umumkan('Profil sudah direset. Selamat mulai dari awal!');
+}
+
 function keHalamanPiala() {
   if (location.search !== '?piala=1') history.pushState({}, '', '/?piala=1');
   tampilPiala();
@@ -856,6 +903,12 @@ document.addEventListener('click', (e) => {
       break;
     case 'lewati-nama':
       selesaiKenalan(null, t.dataset.lanjut);
+      break;
+    case 'reset':
+      tanyaReset();
+      break;
+    case 'reset-ya':
+      resetProfil();
       break;
     case 'ganti-nama':
       tampilKenalan('piala');

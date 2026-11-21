@@ -1,0 +1,106 @@
+<!doctype html>
+<!--
+  Sumber gambar pratinjau link (og.png, 1200x630) untuk WhatsApp, Telegram, dan media sosial.
+  Buat ulang setelah mengubah halaman ini (server lokal harus jalan, `npm run dev`):
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars \
+      --force-device-scale-factor=1 --window-size=1200,630 --virtual-time-budget=8000 \
+      --screenshot=public/og.png http://localhost:8787/og.html
+-->
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex">
+  <title>Gambar pratinjau Kartu Fokus</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@800&display=block">
+  <style>
+    html, body { margin: 0; }
+    body {
+      position: relative;
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+      background: #B5E0FF;
+      color: #2B2A3A;
+      font-family: 'Nunito', sans-serif;
+    }
+    .awan { position: absolute; }
+    .teks { position: absolute; left: 72px; top: 64px; width: 560px; }
+    .merek {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 20px 8px 10px;
+      border: 3px solid #2B2A3A;
+      border-radius: 999px;
+      background: #FFFFFF;
+      box-shadow: 4px 4px 0 #2B2A3A;
+      font: 700 28px/1 'Fredoka', sans-serif;
+    }
+    h1 { margin: 30px 0 0; font: 700 72px/1.04 'Fredoka', sans-serif; }
+    .utuh { white-space: nowrap; }
+    p { margin: 22px 0 0; font: 800 29px/1.35 'Nunito', sans-serif; color: #4A4860; }
+    .url {
+      position: absolute;
+      left: 72px;
+      bottom: 54px;
+      padding: 10px 22px;
+      border: 3px solid #2B2A3A;
+      border-radius: 999px;
+      background: #EA5A12;
+      color: #FFFFFF;
+      box-shadow: 4px 4px 0 #2B2A3A;
+      font: 700 26px/1 'Fredoka', sans-serif;
+    }
+    .kartu {
+      position: absolute;
+      right: 76px;
+      top: 92px;
+      width: 470px;
+      overflow: hidden;
+      border: 4px solid #2B2A3A;
+      border-radius: 26px;
+      background: #FFFFFF;
+      box-shadow: 9px 9px 0 #2B2A3A;
+      transform: rotate(3deg);
+    }
+    .kartu svg { display: block; width: 100%; height: auto; }
+    .jejak { display: flex; gap: 10px; padding: 14px 16px 16px; border-top: 4px solid #2B2A3A; }
+    .jejak span {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      height: 42px;
+      border: 3px solid #2B2A3A;
+      border-radius: 12px;
+      font: 700 22px/1 'Fredoka', sans-serif;
+    }
+    .bintang { position: absolute; right: 42px; top: 44px; transform: rotate(-12deg); }
+  </style>
+</head>
+<body>
+  <svg class="awan" style="left:520px;top:40px;opacity:.45" width="190" viewBox="0 0 80 50"><path d="M10 46a12 12 0 0 1 8-18a17 17 0 0 1 32-4a13 13 0 0 1 18 12a9 9 0 0 1-2 10z" fill="#fff"/></svg>
+  <svg class="awan" style="left:-30px;top:470px;opacity:.4" width="230" viewBox="0 0 80 50"><path d="M6 44a10 10 0 0 1 10-14a14 14 0 0 1 24-8a16 16 0 0 1 28 6a10 10 0 0 1 6 16z" fill="#fff"/></svg>
+  <svg class="awan" style="left:610px;top:520px;opacity:.35" width="170" viewBox="0 0 80 50"><path d="M8 44a9 9 0 0 1 6-14a12 12 0 0 1 22-6a10 10 0 0 1 16 4a8 8 0 0 1 10 8a7 7 0 0 1 0 8z" fill="#fff"/></svg>
+
+  <div class="teks">
+    <span class="merek"><img src="/favicon.svg" width="44" height="44" alt="">Kartu Fokus</span>
+    <h1>Yuk, dongeng sambil main <span class="utuh">tebak-tebakan!</span></h1>
+    <p>Cerita selalu baru. Jawab soalnya, kumpulkan stikernya.</p>
+  </div>
+  <div class="url">fokus-anak.tukangdata.com</div>
+
+  <div class="kartu">
+    <div id="gambar"></div>
+    <div class="jejak">
+      <span style="background:#3B8CF0">✓</span><span style="background:#EF4B3F">✓</span><span style="background:#FFC93C">✓</span><span style="background:#4DBA5E">✓</span>
+    </div>
+  </div>
+  <svg class="bintang" width="110" height="110" viewBox="0 0 64 64"><polygon points="32,4 40.2,24.7 62.4,25.5 45.1,39.4 51.3,60.6 32,48.6 12.7,60.6 18.9,39.4 1.6,25.5 23.8,24.7" fill="#FFC93C" stroke="#2B2A3A" stroke-width="3" stroke-linejoin="round"/></svg>
+
+  <script type="module">
+    import { URUTAN_POTONGAN, pilihBahan } from '/bahan.js';
+    import { kolaseSVG } from '/kolase.js';
+    document.getElementById('gambar').innerHTML = kolaseSVG(pilihBahan('K7Q2'), { tampil: URUTAN_POTONGAN, hias: false });
+  </script>
+</body>
+</html>

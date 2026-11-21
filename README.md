@@ -53,14 +53,7 @@ Buka http://localhost:8787.
 
 Live di **https://fokus-anak.tukangdata.com** (custom domain diatur di `routes` pada `wrangler.jsonc`).
 
-**Deploy otomatis:** setiap push ke `main` menjalankan `.github/workflows/deploy.yml`, yang men-deploy
-lewat wrangler. Butuh dua secret di repo GitHub (Settings > Secrets and variables > Actions):
-
-- `CLOUDFLARE_ACCOUNT_ID`: sudah diisi.
-- `CLOUDFLARE_API_TOKEN`: token dari Cloudflare dengan template **Edit Cloudflare Workers**
-  (zona `tukangdata.com` ikut dipilih). Isi dengan `gh secret set CLOUDFLARE_API_TOKEN --repo thosangs/kartu-fokus`.
-
-Deploy manual dari laptop tetap bisa:
+Deploy dari laptop (manual, tidak otomatis dari push):
 
 ```bash
 npx wrangler deploy
@@ -69,6 +62,17 @@ npx wrangler secret put GEMINI_API_KEY   # sekali saja, atau saat ganti key
 
 Sebaiknya pakai API key Gemini terpisah dari aplikasi lain, supaya kalau kuotanya habis aplikasi
 lain tidak ikut berhenti.
+
+## Ikon, SEO, dan pratinjau link
+
+- `public/favicon.svg` dan `favicon.ico` untuk tab browser, `apple-touch-icon.png` (180px) dan
+  `ikon-192.png`/`ikon-512.png` (lewat `manifest.webmanifest`) untuk ikon di layar HP.
+- Meta title, description, canonical, Open Graph, Twitter card, dan JSON-LD (`WebApplication`) ada
+  di `public/index.html`. Judul tab ikut berganti per layar (judul cerita, Pojok Juara, dan seterusnya).
+- Gambar pratinjau WhatsApp/Telegram: `public/og.png` (1200x630) dirender dari `public/og.html`
+  dengan headless Chrome. Perintahnya ada di komentar atas `og.html`. WhatsApp menyimpan pratinjau
+  lama di cache, jadi link yang sudah pernah dibagikan bisa butuh waktu sebelum gambarnya berganti.
+- `robots.txt` dan `sitemap.xml` di `public/`.
 
 ## Menambah bahan
 
@@ -95,6 +99,7 @@ Semuanya di `public/piala.js`, gampang diubah:
   koleksi tidak dihitung dua kali.
 - **Nama si kecil** ditanya sekali saat pertama mulai (boleh dilewati), lalu dipanggil di setiap soal,
   di layar selesai, dan di Pojok Juara. Nama tidak dikirim ke server atau Gemini.
+- **Reset profil** di Pojok Juara menghapus nama, bintang, tantangan, dan rak cerita (selalu dengan konfirmasi).
 - **Penyimpanan:** localStorage browser (`kf-profil`, `kf-kartu`, `kf-album`). Tidak ada database
   atau akun, jadi isinya hilang kalau data browser dihapus dan tidak pindah ke perangkat lain.
 
