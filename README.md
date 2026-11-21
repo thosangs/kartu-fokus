@@ -7,7 +7,9 @@ gambarnya lengkap. Kartu yang selesai menambah bintang, gelar, dan tantangan di 
 ## Cara kerjanya
 
 1. **Bahan** (`public/bahan.js`) disusun manual: 5 tempat, 12 nama anak, 5 tokoh kedua, 11 benda,
-   dan 5 kerangka alur. Kerangka alur adalah rantai sebab-akibat, jadi soal "kenapa" dan "coba tebak"
+   dan 12 kerangka alur (rusak, hilang, hujan, menolong hewan, salah paham, tiga kali mencoba, kejutan,
+   detektif jejak, terpisah di keramaian, salah dengar, lomba, bergiliran). Sebagian langkah punya
+   beberapa versi penyebab dan akhir, dipilih dari kode kartu. Kerangka alur adalah rantai sebab-akibat, jadi soal "kenapa" dan "coba tebak"
    selalu punya jawaban di cerita.
 2. **Kode kartu** (4 huruf, misalnya `K7Q2`) menentukan bahan secara deterministik. Kode yang sama
    selalu menghasilkan tokoh, tempat, dan benda yang sama.
@@ -17,7 +19,10 @@ gambarnya lengkap. Kartu yang selesai menambah bintang, gelar, dan tantangan di 
    Kalau masih kurang pas, dicoba sekali lagi.
    Gaya bercerita juga diatur di prompt: kalimat pertama langsung ke kejadian, ada kata bunyi dan
    satu ucapan yang diulang, perasaan ditunjukkan lewat gerak, dan akhir cerita berupa adegan kecil,
-   bukan pesan moral. Bentuk pembuka dan bentuk judul dipilih dari kode kartu supaya tidak seragam.
+   bukan pesan moral. Dari kode kartu juga dipilih: bentuk pembuka, bentuk judul, gaya bercerita
+   (berurutan, mulai dari tengah, pola tiga kali, petunjuk yang jadi kejutan, atau pendengar ikut
+   menebak), jenis penutup, dan paragraf tempat tiap detail ditanam (tidak menumpuk di paragraf
+   pertama). Kalau percobaan pertama ditolak pemeriksaan, percobaan kedua diberi tahu alasannya.
 4. **Rencana soal** (`src/soal.js`) juga ditentukan kode kartu, supaya pertanyaan tidak bisa ditebak
    dari kartu sebelumnya:
    - Urutan tipe soal dipilih dari 7 pola. Soal ingatan tidak selalu di depan, kadang ada dua, dan
@@ -80,7 +85,8 @@ lain tidak ikut berhenti.
   Deskripsi tempat hanya boleh menyebut hal yang memang digambar.
 - Benda baru: tambah di `BENDA` dengan `sifat` (peran di kerangka: `rusak`, `hilang`, `hujan`,
   `dipinjam`, `hewan`, `alat`) dan gambarnya di `BENDA_GAMBAR`.
-- Kerangka alur baru: tambah di `KERANGKA`. Tulis langkah alur sebagai rantai sebab-akibat, lalu
+- Kerangka alur baru: tambah di `KERANGKA`. Tulis langkah alur sebagai rantai sebab-akibat (langkah
+  berupa array = beberapa versi), pakai `butuh` dan `benda2` untuk peran benda, lalu
   tambahkan sudut soalnya di `PENYEBAB`, `TEBAK`, dan `IDE` (`src/soal.js`), minimal tiga per tipe.
   Tanpa itu kerangka tetap jalan, tapi memakai sudut umum saja.
 - Sudut soal baru: tambah di bank yang sesuai di `src/soal.js`. Tulis sebagai perintah untuk Gemini

@@ -53,8 +53,12 @@ async function buatKartu(request, env) {
   let terbaik = null;
   for (let percobaan = 0; percobaan < 2; percobaan++) {
     let cerita;
+    // Percobaan kedua diberi tahu apa yang kurang dari percobaan pertama.
+    const catatan = terbaik?.masalah.length
+      ? `\n\nPERBAIKI, percobaan sebelumnya ditolak karena: ${terbaik.masalah.join('; ')}. Panjang cerita wajib ${USIA[usia].kata[0]} sampai ${USIA[usia].kata[1]} kata, dan "bukti" wajib disalin persis dari kalimat cerita.`
+      : '';
     try {
-      cerita = await panggilGemini(prompt, env);
+      cerita = await panggilGemini(prompt + catatan, env);
     } catch (e) {
       console.error('gemini gagal', kode, String(e));
       continue;

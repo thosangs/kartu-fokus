@@ -93,6 +93,13 @@ const PENYEBAB = {
   hujan: ['tanyakan kenapa {anak} bisa basah kuyup.', 'tanyakan kenapa {kedua} menyuruh {anak} membawa {benda}.', 'tanyakan kenapa {anak} tidak membawa {benda}.'],
   hewan: ['tanyakan kenapa {benda} bisa kesulitan.', 'tanyakan untuk apa mereka memakai {benda2}.', 'tanyakan bagaimana {benda} akhirnya bisa selamat.'],
   salah_paham: ['tanyakan kenapa {anak} mengira {kedua} mengambil {benda}.', 'tanyakan kenapa {kedua} meminjam {benda}.', 'tanyakan kenapa {anak} tidak mau menyapa {kedua}.'],
+  tiga_coba: ['tanyakan kenapa percobaan pertama gagal.', 'tanyakan kenapa percobaan kedua gagal.', 'tanyakan apa yang membuat percobaan ketiga berhasil.'],
+  kejutan: ['tanyakan kenapa {anak} menyiapkan kejutan untuk {kedua}.', 'tanyakan kenapa {anak} buru-buru menyembunyikan kejutannya.', 'tanyakan untuk apa {benda2} dipakai saat menyiapkan kejutan.'],
+  jejak: ['tanyakan kenapa {benda} tidak ada di tempat biasanya.', 'tanyakan petunjuk apa yang membuat {anak} tahu ke mana harus mencari.', 'tanyakan kenapa {benda2} membawa {benda}.'],
+  tersesat: ['tanyakan kenapa {anak} bisa terpisah dari {kedua}.', 'tanyakan bagaimana {anak} akhirnya bisa menemukan {kedua}.', 'tanyakan kenapa {benda} mudah terlihat dari jauh.'],
+  salah_dengar: ['tanyakan kenapa {anak} membawa {benda2}, bukan {benda}.', 'tanyakan untuk apa {kedua} sebenarnya butuh {benda}.', 'tanyakan bagaimana kesalahan itu akhirnya ketahuan.'],
+  lomba: ['tanyakan kenapa {anak} berhenti di tengah lomba.', 'tanyakan apa yang terjadi pada {kedua} saat lomba.', 'tanyakan kenapa penonton atau panitia memberi perhatian khusus kepada {anak} dan {kedua}.'],
+  bergiliran: ['tanyakan kenapa {anak} dan {kedua} berebut.', 'tanyakan kenapa {benda} hampir rusak.', 'tanyakan bagaimana mereka akhirnya bisa bermain bersama.'],
 };
 const PENYEBAB_UMUM = ['tanyakan kenapa kejadian paling penting di cerita bisa terjadi.'];
 
@@ -124,6 +131,41 @@ const TEBAK = {
     { p: 'tanyakan andaikan {kedua} bilang dulu sebelum meminjam, apa yang akan terjadi.', bukti: 'boleh' },
     { p: 'tanyakan apa yang dirasakan {anak} setelah tahu alasan {kedua}, dan dari mana kita tahu.', bentuk: PERASAAN },
   ],
+  tiga_coba: [
+    { p: 'tanyakan apa yang dirasakan {anak} setelah gagal dua kali, dan dari mana kita tahu.', bentuk: PERASAAN },
+    { p: 'tanyakan kenapa menurut anak, {kedua} tidak langsung memberi tahu caranya.', bukti: 'boleh' },
+    { p: 'tanyakan andaikan {anak} menyerah setelah percobaan kedua, apa yang akan terjadi.', bukti: 'boleh' },
+  ],
+  kejutan: [
+    { p: 'tanyakan apa yang dirasakan {kedua} saat menerima kejutan, dan dari mana kita tahu.', bentuk: PERASAAN },
+    { p: 'tanyakan andaikan {kedua} tahu lebih dulu, apa yang akan terjadi.', bukti: 'boleh' },
+    { p: 'tanyakan kenapa menurut anak, {anak} memilih {benda} untuk kejutannya.', bukti: 'boleh' },
+  ],
+  jejak: [
+    { p: 'tanyakan dari petunjuk mana pendengar bisa menebak pelakunya sebelum ketahuan.' },
+    { p: 'tanyakan apa yang dirasakan {anak} saat tahu siapa pelakunya, dan dari mana kita tahu.', bentuk: PERASAAN },
+    { p: 'tanyakan andaikan {anak} tidak memperhatikan petunjuk-petunjuk itu, apa yang akan terjadi.', bukti: 'boleh' },
+  ],
+  tersesat: [
+    { p: 'tanyakan apa yang dirasakan {anak} saat sadar ia sendirian, dan dari mana kita tahu.', bentuk: PERASAAN },
+    { p: 'tanyakan apa yang dirasakan {kedua} saat bertemu {anak} lagi, dan dari mana kita tahu.', bentuk: PERASAAN },
+    { p: 'tanyakan andaikan {anak} terus berlari ke sana kemari, apa yang bisa terjadi.', bukti: 'boleh' },
+  ],
+  salah_dengar: [
+    { p: 'tanyakan apa yang dirasakan {anak} saat tahu ia salah membawa barang, dan dari mana kita tahu.', bentuk: PERASAAN },
+    { p: 'tanyakan kenapa menurut anak, {kedua} tidak marah.', bukti: 'boleh' },
+    { p: 'tanyakan andaikan {anak} bertanya ulang dari awal, apa yang akan terjadi.', bukti: 'boleh' },
+  ],
+  lomba: [
+    { p: 'tanyakan apa yang dirasakan {anak} saat harus memilih antara terus berlari atau menolong, dan dari mana kita tahu.', bentuk: PERASAAN },
+    { p: 'tanyakan apa yang dirasakan {kedua} saat ditolong {anak}, dan dari mana kita tahu.', bentuk: PERASAAN },
+    { p: 'tanyakan andaikan {anak} tidak berhenti, apa yang akan terjadi.', bukti: 'boleh' },
+  ],
+  bergiliran: [
+    { p: 'tanyakan apa yang dirasakan {anak} dan {kedua} saat duduk berjauhan, dan dari mana kita tahu.', bentuk: PERASAAN },
+    { p: 'tanyakan andaikan mereka terus berebut, apa yang akan terjadi pada {benda}.', bukti: 'boleh' },
+    { p: 'tanyakan kenapa menurut anak, bermain berdua jadi lebih seru.', bukti: 'boleh' },
+  ],
 };
 const TEBAK_UMUM = [
   { p: 'tanyakan menurut anak, {anak} itu anak yang seperti apa, dan dari mana kita tahu. Jawaban yang diharapkan: {sifat}, dilihat dari kelakuannya di cerita.' },
@@ -135,6 +177,13 @@ const IDE = {
   hujan: ['tanyakan tanda lain bahwa hujan akan turun.', 'tanyakan benda lain yang bisa melindungi kita dari hujan.', 'tanyakan permainan yang bisa dimainkan di dalam rumah waktu hujan.'],
   hewan: ['tanyakan benda lain yang bisa dipakai untuk menolong {benda}.', 'tanyakan cara menjaga {benda} supaya tidak kesulitan lagi.'],
   salah_paham: ['tanyakan apa yang sebaiknya dilakukan kalau barang kita tidak ada di tempatnya.', 'tanyakan cara yang baik untuk meminjam barang teman.'],
+  tiga_coba: ['tanyakan cara lain yang bisa dicoba {anak} supaya berhasil.', 'tanyakan apa yang kamu lakukan kalau sudah mencoba dua kali dan masih gagal.'],
+  kejutan: ['tanyakan kejutan lain yang bisa dibuat untuk orang tersayang.', 'tanyakan cara menyimpan rahasia kejutan supaya tidak ketahuan.'],
+  jejak: ['tanyakan tempat aman untuk menyimpan {benda} supaya tidak dibawa hewan.', 'tanyakan petunjuk lain yang bisa dicari seorang detektif cilik.'],
+  tersesat: ['tanyakan apa yang sebaiknya dilakukan kalau terpisah dari orang tua di tempat ramai.', 'tanyakan tanda apa yang bisa dipakai supaya kita mudah ditemukan.'],
+  salah_dengar: ['tanyakan cara supaya tidak salah dengar saat disuruh.', 'tanyakan permainan seru apa yang bisa dibuat dari kata-kata yang mirip bunyinya.'],
+  lomba: ['tanyakan lomba lain yang seru untuk dimainkan bersama teman.', 'tanyakan apa yang kamu lakukan kalau temanmu jatuh saat lomba.'],
+  bergiliran: ['tanyakan cara bergiliran yang adil kalau dua anak ingin memakai satu barang.', 'tanyakan permainan apa yang bisa dimainkan berdua dengan {benda}.'],
 };
 const IDE_UMUM = [
   'tanyakan: kalau kamu jadi {anak}, apa yang akan kamu lakukan di bagian paling sulit cerita ini?',

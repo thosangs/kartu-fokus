@@ -52,6 +52,23 @@ const BENTUK_JUDUL = [
   'kata bunyi yang penting di cerita, ditambah sedikit keterangan',
 ];
 
+// Cara menceritakan alur yang sama. Dipilih dari kode kartu supaya struktur cerita tidak selalu
+// "perkenalan, masalah, selesai" dengan urutan yang bisa ditebak.
+const GAYA_ALUR = [
+  'Ceritakan berurutan, tapi buat bagian tengah (saat masalahnya berkembang) menjadi bagian yang paling panjang dan paling hidup.',
+  'Buka cerita langsung di momen paling menegangkan dari alur, lalu dalam satu atau dua kalimat ceritakan bagaimana semuanya bermula, baru lanjutkan sampai selesai.',
+  'Pakai pola tiga kali: ada satu hal yang terjadi, dicari, atau dicoba tiga kali dengan hasil berbeda. Yang ketiga membawa perubahan.',
+  'Tanam satu petunjuk kecil di bagian awal yang kelihatannya tidak penting, lalu buat petunjuk itu menjadi kunci di akhir cerita, sebagai kejutan kecil yang masuk akal.',
+  'Biarkan pendengar ikut menebak: tunjukkan petunjuk-petunjuk lebih dulu kepada pendengar, sebelum tokohnya sendiri menyadari apa yang terjadi.',
+];
+const PENUTUP = [
+  'satu kalimat ucapan tokoh yang lucu atau hangat',
+  'adegan kecil yang memantulkan kalimat pembuka cerita',
+  'ucapan berulang di cerita, yang kali ini sedikit diubah',
+  'gambaran kecil tentang apa yang dilakukan tokoh sesaat setelah masalahnya selesai',
+  'tingkah lucu salah satu tokoh atau hewan di sekitar mereka',
+];
+
 function frasaBenda(b) {
   const meta = BENDA[b.id];
   if (b.jumlah) return `${b.nama} berisi ${b.jumlah} ${meta.satuan.replace(' telur', '')} telur`;
@@ -74,7 +91,24 @@ export function buatPrompt(bahan, usia) {
       .replaceAll('{tempat}', TEMPAT[bahan.tempat].nama);
 
   const r = acak(`${bahan.kode}|gaya`);
-  const gaya = { pembuka: PEMBUKA[Math.floor(r() * PEMBUKA.length)], judul: BENTUK_JUDUL[Math.floor(r() * BENTUK_JUDUL.length)] };
+  const pilih = (arr) => arr[Math.floor(r() * arr.length)];
+  const gaya = { pembuka: pilih(PEMBUKA), judul: pilih(BENTUK_JUDUL), alur: pilih(GAYA_ALUR), penutup: pilih(PENUTUP) };
+
+  // Langkah alur bisa punya beberapa versi; satu dipilih per kartu.
+  const alur = k.alur.map((a, i) => (Array.isArray(a) ? a[Math.floor(acak(`${bahan.kode}|alur|${i}`)() * a.length)] : a));
+  const benda2Penting = k.alur.flat().some((a) => a.includes('{benda2}'));
+
+  // Detail disebar ke paragraf 2 sampai terakhir, masing-masing di paragraf berbeda (kalau cukup),
+  // supaya tidak menumpuk di paragraf pertama atau di satu tempat.
+  const rd = acak(`${bahan.kode}|${usia}|sebar`);
+  const paragrafTersedia = Array.from({ length: u.paragraf - 1 }, (_, i) => i + 2);
+  for (let i = paragrafTersedia.length - 1; i > 0; i--) {
+    const j = Math.floor(rd() * (i + 1));
+    [paragrafTersedia[i], paragrafTersedia[j]] = [paragrafTersedia[j], paragrafTersedia[i]];
+  }
+  const sebaran = detail
+    .map((d, i) => ({ teks: d.teks, paragraf: paragrafTersedia[i % paragrafTersedia.length] }))
+    .sort((a, b) => a.paragraf - b.paragraf);
 
   const kedua =
     bahan.kedua.id === 'teman'
@@ -88,11 +122,15 @@ BAHAN (wajib dipakai persis, jangan diganti):
 - Tokoh kedua: ${kedua}.
 - Tempat: ${TEMPAT[bahan.tempat].deskripsi}.
 - Benda penting: ${frasaBenda(bahan.benda)}.
-- Benda tambahan: ${frasaBenda(bahan.benda2)}.${k.alat ? '' : ' Cukup disebut sekali sebagai detail suasana.'}
-- Detail yang wajib muncul jelas di cerita (sebut semuanya, walau tidak semua ditanyakan): ${detail.map((d) => d.teks).join('; ')}.
+- Benda tambahan: ${frasaBenda(bahan.benda2)}.${benda2Penting ? ' Benda ini punya peran di alur.' : ' Cukup muncul sekali sebagai detail suasana, di tengah cerita.'}
 
-ALUR (ikuti urutannya, ini rantai sebab-akibat):
-${k.alur.map((a, i) => `${i + 1}. ${isi(a)}`).join('\n')}
+DETAIL YANG DITANAM (wajib muncul jelas, walau tidak semua ditanyakan). Selipkan di tengah kejadian, sebagai bagian dari aksi atau ucapan tokoh, bukan daftar di awal:
+${sebaran.map((d) => `- "${d.teks}": di paragraf ${d.paragraf}.`).join('\n')}
+Paragraf pertama cukup membawa pendengar masuk ke kejadian; jangan menumpuk ciri-ciri benda, warna, atau jumlah di sana.
+Tulis detail dengan kalimatmu sendiri, jangan disalin apa adanya (misalnya bukan "kejadiannya sore hari", tapi "Sore itu, matahari sudah condong ...").
+
+ALUR (rantai sebab-akibat; isi kejadiannya wajib, cara menceritakannya mengikuti GAYA di bawah):
+${alur.map((a, i) => `${i + 1}. ${isi(a)}`).join('\n')}
 
 ATURAN CERITA:
 - Panjang ${u.kata[0]} sampai ${u.kata[1]} kata, dibagi ${u.paragraf} paragraf pendek. Ini batas keras: kalau kepanjangan, kurangi deskripsi, bukan ucapan tokoh.
@@ -102,18 +140,21 @@ ATURAN CERITA:
 - Sebut tempat-tempat kecil dengan jelas (misalnya "di bawah pohon", "di dekat lapak buah"), dan buat urutan kejadian mudah diikuti.
 
 CARA BERCERITA (cerita ini dibacakan keras, jadi harus seru didengar, bukan seperti laporan):
-- Judul berbentuk ${gaya.judul}.
+- GAYA untuk kartu ini: ${gaya.alur}
+- Judul berbentuk ${gaya.judul}. Judul apa pun tidak boleh membocorkan akhir cerita, dan tidak memakai kata "hilang", "rusak", atau "ketemu".
 - Buka cerita dengan ${gaya.pembuka}. Jangan dibuka dengan "Pada suatu hari", nama hari, atau kalimat yang hanya menjelaskan tempat.
 - Deskripsi tempat di bahan hanya catatan untukmu. Jangan salin utuh; munculkan bagiannya satu per satu saat tokoh melihat, mendengar, atau melewatinya.
 - Pakai 2 atau 3 kata bunyi yang cocok dengan kejadian (bunyi langkah, benda jatuh, air, hewan, angin), tersebar di cerita.
 - Pilih satu ucapan pendek atau bunyi khas (paling banyak 6 kata) yang muncul lagi 2 atau 3 kali, dan setiap kali muncul harus masuk akal dengan kejadiannya. Yang terakhir boleh sedikit diubah supaya terasa sebagai penutup. Anak senang menebak kapan ucapan itu muncul lagi.
 - Minimal tiga kalimat ucapan tokoh dalam tanda kutip, dengan nada yang berbeda-beda (bertanya, berseru, berbisik), supaya orang tua bisa memainkan suaranya.
-- Tunjukkan perasaan lewat gerak tubuh dan ucapan (menunduk, menggigit bibir, melompat-lompat, suaranya mengecil), bukan dengan menyebut "sedih", "senang", atau "takut". ${usia === '4-5' ? 'Untuk anak 4–5 tahun, buat gerak tubuhnya jelas dan mudah dikenali.' : 'Petunjuknya boleh halus, asal ada.'}
+- Tunjukkan perasaan lewat gerak tubuh dan ucapan (menunduk, menggigit bibir, menghentakkan kaki, suaranya mengecil, memeluk lutut), bukan dengan menyebut "sedih", "senang", atau "takut". ${usia === '4-5' ? 'Untuk anak 4–5 tahun, buat gerak tubuhnya jelas dan mudah dikenali.' : 'Petunjuknya boleh halus, asal ada.'}
 - Ada satu momen menahan napas sebelum masalahnya selesai: tokoh mencari, menunggu, ragu, atau hampir salah langkah.
+- Setiap paragraf membawa satu hal baru yang bisa dilihat, didengar, atau dirasakan (bukan sekadar ringkasan "lalu ... lalu ..."). Bagian tengah harus terasa, bukan dilewati dalam satu kalimat.
 - Panjang kalimat berganti-ganti. Kebanyakan pendek, sesekali satu kalimat yang sangat pendek untuk memberi jeda.
 - ${GAYA_USIA[usia]}
-- Akhiri dengan satu gambaran kecil yang hangat atau lucu: apa yang dilakukan, dilihat, atau diucapkan tokoh saat itu juga. Kalimat terakhir tidak boleh tentang pelajaran, kebiasaan baru, atau pesan moral (misalnya "sejak hari itu", "kini ${bahan.anak.nama} tahu", "${bahan.anak.nama} selalu", "${bahan.anak.nama} sadar bahwa").
-- Hindari klise: "pada suatu hari", "tiba-tiba" lebih dari sekali, "dengan wajah ceria", "tersenyum lebar", "hari yang cerah", "terlihat sebuah", "sangat" berulang kali, "lucu", "indah", "menyenangkan".
+- Akhiri dengan ${gaya.penutup}. Kalimat terakhir tidak boleh tentang pelajaran, kebiasaan baru, atau pesan moral (misalnya "sejak hari itu", "kini ${bahan.anak.nama} tahu", "${bahan.anak.nama} selalu", "${bahan.anak.nama} sadar bahwa").
+- Kalimat pertama tidak boleh tentang tokoh yang melompat-lompat, berlari kecil, atau berjalan riang. Detail tempat yang sama (misalnya gunung, tiang bendera) cukup disebut sekali.
+- Hindari klise: "pada suatu hari", "melompat-lompat", "tiba-tiba" lebih dari sekali, "dengan wajah ceria", "tersenyum lebar", "hari yang cerah", "terlihat sebuah", "sangat" berulang kali, "lucu", "indah", "menyenangkan".
 
 PERTANYAAN (tepat 4, urutannya tetap, masing-masing dengan perintah dan bentuknya sendiri):
 ${rencana.map((s, i) => `${i + 1}. tipe "${s.tipe}": ${isi(s.perintah)} Bentuk: ${BENTUK[s.bentuk]}.`).join('\n')}
