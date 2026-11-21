@@ -53,6 +53,15 @@ Buka http://localhost:8787.
 
 Live di **https://fokus-anak.tukangdata.com** (custom domain diatur di `routes` pada `wrangler.jsonc`).
 
+**Deploy otomatis:** setiap push ke `main` menjalankan `.github/workflows/deploy.yml`, yang men-deploy
+lewat wrangler. Butuh dua secret di repo GitHub (Settings > Secrets and variables > Actions):
+
+- `CLOUDFLARE_ACCOUNT_ID`: sudah diisi.
+- `CLOUDFLARE_API_TOKEN`: token dari Cloudflare dengan template **Edit Cloudflare Workers**
+  (zona `tukangdata.com` ikut dipilih). Isi dengan `gh secret set CLOUDFLARE_API_TOKEN --repo thosangs/kartu-fokus`.
+
+Deploy manual dari laptop tetap bisa:
+
 ```bash
 npx wrangler deploy
 npx wrangler secret put GEMINI_API_KEY   # sekali saja, atau saat ganti key
